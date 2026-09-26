@@ -1,69 +1,231 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+import Hero from "@/components/Hero";
+import WorkoutCard from "@/components/WorkoutCard";
+import WorkoutSkeleton from "@/components/WorkoutSkeleton";
+import { Workout } from "@/types/workout";
+import { ChevronDown, Search, Filter, AlertCircle, RefreshCw } from "lucide-react";
+
+type SortOption = "duration" | "calories" | "rating";
 
 export default function Home() {
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filtering & Sorting States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMuscle, setSelectedMuscle] = useState<string>("All");
+  const [sortBy, setSortBy] = useState<SortOption>("duration");
+
+  const fetchWorkouts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("https://api.abcz.workers.dev/api/fitlog");
+      if (!res.ok) {
+        throw new Error(`Failed to fetch workouts (${res.status})`);
+      }
+      const data: Workout[] = await res.json();
+      setWorkouts(data);
+    } catch (err: any) {
+      console.error("Error fetching fitlog data:", err);
+      setError(err.message || "Could not load exercise library.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  // Extract all unique muscle groups
+  const allMuscleGroups = useMemo(() => {
+    const groups = new Set<string>();
+    workouts.forEach((w) => {
+      w.muscleGroups.forEach((m) => groups.add(m));
+    });
+    return ["All", ...Array.from(groups)];
+  }, [workouts]);
+
+  // Filtered and Sorted Workouts
+  const filteredAndSortedWorkouts = useMemo(() => {
+    let result = [...workouts];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (w) =>
+          w.name.toLowerCase().includes(q) ||
+          w.equipment.toLowerCase().includes(q) ||
+          w.muscleGroups.some((m) => m.toLowerCase().includes(q))
+      );
+    }
+
+    // Muscle group tag filter
+    if (selectedMuscle !== "All") {
+      result = result.filter((w) =>
+        w.muscleGroups.some(
+          (m) => m.toLowerCase() === selectedMuscle.toLowerCase()
+        )
+      );
+    }
+
+    // Sort By logic (Challenge C1)
+    result.sort((a, b) => {
+      if (sortBy === "duration") {
+        return a.duration - b.duration;
+      }
+      if (sortBy === "calories") {
+        return b.caloriesBurned - a.caloriesBurned; // higher calories first
+      }
+      if (sortBy === "rating") {
+        return b.rating - a.rating; // higher rating first
+      }
+      return 0;
+    });
+
+    return result;
+  }, [workouts, searchQuery, selectedMuscle, sortBy]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-zinc-950 pb-20">
+      {/* Hero Banner Section */}
+      <Hero />
+
+      {/* Library Section */}
+      <section id="library" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 scroll-mt-20">
+        {/* Section Header */}
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#ccff00]">
+              <span>CURATED EXERCISES</span>
+            </div>
+            <h2 className="mt-1 text-3xl font-black uppercase tracking-tight text-white sm:text-5xl font-[family-name:var(--font-oswald)]">
+              THE LIBRARY
+            </h2>
+            <p className="mt-2 text-base text-zinc-400">
+              Twelve lifts covering every major muscle group.
+            </p>
+          </div>
+
+          {/* Controls Bar: Sort Dropdown & Search */}
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            {/* Search Input */}
+            <div className="relative flex-1 md:w-64">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Search lifts or muscles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-10 pr-4 text-xs font-medium text-white placeholder-zinc-500 transition-colors focus:border-[#ccff00] focus:outline-none focus:ring-1 focus:ring-[#ccff00]"
+              />
+            </div>
+
+            {/* Sort Dropdown (Challenge C1) */}
+            <div className="relative">
+              <label htmlFor="sort-select" className="sr-only">
+                Sort By
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-3 text-xs font-bold uppercase text-zinc-400 pointer-events-none">
+                  Sort By:
+                </span>
+                <select
+                  id="sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-20 pr-9 text-xs font-bold uppercase text-[#ccff00] transition-colors hover:border-zinc-700 focus:border-[#ccff00] focus:outline-none cursor-pointer"
+                >
+                  <option value="duration">Duration</option>
+                  <option value="calories">Calories</option>
+                  <option value="rating">Rating</option>
+                </select>
+                <ChevronDown className="absolute right-3 h-4 w-4 text-zinc-400 pointer-events-none" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Muscle Group Tag Filter Pills */}
+        {!loading && workouts.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2 border-b border-zinc-800/80 pb-6">
+            {allMuscleGroups.map((muscle) => (
+              <button
+                key={muscle}
+                onClick={() => setSelectedMuscle(muscle)}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  selectedMuscle === muscle
+                    ? "bg-[#ccff00] text-black shadow-md shadow-[#ccff00]/10 scale-105"
+                    : "bg-zinc-900/80 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-zinc-800"
+                }`}
+              >
+                {muscle}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Loading State Animation */}
+        {loading && (
+          <div className="mt-8">
+            <WorkoutSkeleton />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mt-12 flex flex-col items-center justify-center rounded-2xl border border-red-900/50 bg-red-950/20 p-8 text-center">
+            <AlertCircle className="h-10 w-10 text-red-500" />
+            <h3 className="mt-3 text-lg font-bold text-white uppercase">
+              Failed to load workouts
+            </h3>
+            <p className="mt-1 text-sm text-zinc-400">{error}</p>
+            <button
+              onClick={fetchWorkouts}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2 text-xs font-bold text-white hover:bg-zinc-700 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" /> Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Workouts 3x4 Grid */}
+        {!loading && !error && (
+          <div className="mt-8">
+            {filteredAndSortedWorkouts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredAndSortedWorkouts.map((workout) => (
+                  <WorkoutCard key={workout.id} workout={workout} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/40">
+                <Search className="h-10 w-10 text-zinc-600" />
+                <h3 className="mt-4 text-lg font-bold text-white uppercase font-[family-name:var(--font-oswald)]">
+                  No Lifts Found
+                </h3>
+                <p className="mt-1 text-sm text-zinc-400">
+                  No workouts match your current filter query.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedMuscle("All");
+                  }}
+                  className="mt-4 rounded-xl bg-[#ccff00] px-4 py-2 text-xs font-extrabold uppercase text-black hover:bg-[#b8e600]"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
