@@ -11,7 +11,6 @@ import {
   Clock,
   Flame,
   Star,
-  Layers,
   Dumbbell,
   Target,
   Gauge,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { usePlan } from "@/context/PlanContext";
 import { Workout } from "@/types/workout";
+import { FALLBACK_WORKOUTS } from "@/data/workouts";
 
 export default function WorkoutDetailPage() {
   const params = useParams();
@@ -39,27 +39,30 @@ export default function WorkoutDetailPage() {
     const fetchWorkoutDetail = async () => {
       setLoading(true);
       setError(null);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
       try {
-        // Try fetching single workout endpoint
-        const res = await fetch(`https://api.abcz.workers.dev/api/fitlog/${workoutId}`);
+        const res = await fetch(`https://api.abcz.workers.dev/api/fitlog/${workoutId}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const data: Workout = await res.json();
           setWorkout(data);
         } else {
-          // Fallback to searching all workouts
-          const allRes = await fetch("https://api.abcz.workers.dev/api/fitlog");
-          if (!allRes.ok) throw new Error("Failed to fetch workouts.");
-          const allData: Workout[] = await allRes.json();
-          const found = allData.find((w) => w.id === workoutId);
-          if (found) {
-            setWorkout(found);
-          } else {
-            setError("Workout not found.");
-          }
+          throw new Error("Detail endpoint returned error");
         }
-      } catch (err: any) {
-        console.error("Error fetching detail:", err);
-        setError("Unable to load workout details.");
+      } catch (err) {
+        // Fallback to local static workouts
+        const found = FALLBACK_WORKOUTS.find((w) => w.id === workoutId);
+        if (found) {
+          setWorkout(found);
+        } else {
+          setError("Workout not found.");
+        }
       } finally {
         setLoading(false);
       }
