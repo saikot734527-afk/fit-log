@@ -17,7 +17,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-900 bg-[#0c0d12]/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: Brand Logo from assets */}
+        {/* Left: Brand Logo */}
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-black tracking-wider text-white transition-opacity hover:opacity-90"
@@ -36,7 +36,7 @@ export default function Navbar() {
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/"
-            className={`px-4 py-1.5 text-xs font-bold transition-all rounded-full ${
+            className={`px-4 py-1.5 text-xs font-bold transition-all rounded-none ${
               isWorkoutsActive
                 ? "bg-[#1d1f2a] text-[#ccff00]"
                 : "text-zinc-400 hover:text-white"
@@ -46,7 +46,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/my-plan"
-            className={`px-4 py-1.5 text-xs font-bold transition-all rounded-full ${
+            className={`px-4 py-1.5 text-xs font-bold transition-all rounded-none ${
               isMyPlanActive
                 ? "bg-[#1d1f2a] text-[#ccff00]"
                 : "text-zinc-400 hover:text-white"
@@ -64,7 +64,7 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors"
           >
             <span>Plan</span>
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ccff00] text-[11px] font-extrabold text-black">
+            <span className="flex h-5 w-5 items-center justify-center rounded-none bg-[#ccff00] text-[11px] font-extrabold text-black">
               {planCount}
             </span>
           </Link>
@@ -75,7 +75,7 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors"
           >
             <span>Saved</span>
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-zinc-700 bg-transparent text-[11px] font-bold text-zinc-300">
+            <span className="flex h-5 w-5 items-center justify-center rounded-none border border-zinc-700 bg-transparent text-[11px] font-bold text-zinc-300">
               {savedCount}
             </span>
           </Link>

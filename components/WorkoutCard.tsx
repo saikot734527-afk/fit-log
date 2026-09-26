@@ -12,14 +12,14 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
   return (
     <Link
       href={`/workout/${workout.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#12131b] transition-all duration-300 hover:border-zinc-700 hover:shadow-xl hover:-translate-y-1"
+      className="group flex flex-col overflow-hidden rounded-none border border-zinc-800/80 bg-[#12131b] transition-all duration-300 hover:border-zinc-700 hover:shadow-xl hover:-translate-y-1"
     >
       {/* Thumbnail Container */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-zinc-950">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-zinc-950 rounded-none">
         <img
           src={workout.image}
           alt={workout.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-none"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#12131b] via-transparent to-transparent opacity-60" />
@@ -28,12 +28,12 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
       {/* Card Details */}
       <div className="flex flex-1 flex-col justify-between p-5">
         <div>
-          {/* Category Tag Pills (Filled neon green #ccff00 with black text) */}
+          {/* Category Tag Pills */}
           <div className="flex flex-wrap gap-1.5 mb-3">
             {workout.muscleGroups.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-[#ccff00] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-black"
+                className="rounded-none bg-[#ccff00] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-black"
               >
                 {tag}
               </span>
