@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell } from "lucide-react";
 import { usePlan } from "@/context/PlanContext";
 
 export default function Navbar() {
@@ -18,14 +17,16 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-900 bg-[#0c0d12]/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: Brand Logo */}
+        {/* Left: Brand Logo from assets */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-lg font-black tracking-wider text-white transition-opacity hover:opacity-90"
+          className="flex items-center gap-2 text-lg font-black tracking-wider text-white transition-opacity hover:opacity-90"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded bg-[#ccff00] text-black">
-            <Dumbbell className="h-4 w-4 stroke-[3] -rotate-45" />
-          </div>
+          <img
+            src="/assets/logo.png"
+            alt="FITLOG Logo"
+            className="h-7 w-auto object-contain"
+          />
           <span className="font-black uppercase tracking-widest text-white font-[family-name:var(--font-oswald)] text-xl">
             FIT<span className="text-white">LOG</span>
           </span>

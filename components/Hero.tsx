@@ -30,13 +30,13 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Right Side Illustration */}
+          {/* Right Side Hero Banner Image from assets */}
           <div className="flex justify-center lg:col-span-5 lg:justify-end">
-            <div className="relative h-56 w-56 sm:h-72 sm:w-72 lg:h-80 lg:w-80">
+            <div className="relative h-64 w-64 sm:h-80 sm:w-80 lg:h-96 lg:w-96">
               <img
-                src="https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691400.jpg?w=740"
-                alt="FitLog Hero Illustration"
-                className="h-full w-full object-contain rounded-2xl filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"
+                src="/assets/banner.png"
+                alt="FitLog Hero Banner"
+                className="h-full w-full object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"
               />
             </div>
           </div>
